@@ -15,7 +15,7 @@ _max=0
 with st.sidebar:
     st.title("Análisis de COVID-19 por área metropolitana")
     selected_decks = st.multiselect(
-        "Señala el hospital a evaluar", database_data['MMSA'].unique())  
+        "Señala el área a evaluar", database_data['MMSA'].unique())  
     st.title("Según que rango quieres evaluar")
     ev_data = st.radio(
     "Opciones:",
