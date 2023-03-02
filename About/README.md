@@ -13,3 +13,6 @@ He obtenido los datos de github (https://raw.githubusercontent.com/fivethirtyeig
 - hospitals: El número de hospitales en el área, según los datos de Kaiser Family Foundation
 - total_at_risk: El número total de personas de alto riesgo en el área, según el BRFSS de los CDC.
 
+## Publica la aplicación.
+- He intentado subir el proyecto y me tira este mensaje "Wrong workspace! You are in the workspace kzdx but are trying to deploy an app from dwes-le. Please switch workspaces in the top right." Debido a que el proyecto no me pertenece al 100% entonces he decido subirlo desde mi propio Github en este link = "https://kzdx-covid-19.streamlit.app/"
+
