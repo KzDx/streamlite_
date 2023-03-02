@@ -1,5 +1,9 @@
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
+import numpy as np
+from bokeh.plotting import figure
+import altair as alt
 
 
 def load_dataset(data_link):
@@ -8,9 +12,13 @@ def load_dataset(data_link):
 
 database_link = "https://raw.githubusercontent.com/fivethirtyeight/data/master/covid-geography/mmsa-icu-beds.csv"
 database_data = load_dataset(database_link)
+st.title("DATOS COVID-19")
 st.dataframe(database_data)
 _min=0
 _max=0
+arr_hosp = []
+arr_arcu = []
+fig=0
 
 with st.sidebar:
     st.title("Análisis de COVID-19 por área metropolitana")
@@ -79,7 +87,7 @@ with st.sidebar:
     st.title("Datos gráficos de las evaluaciones por área")
     option = st.selectbox(
     'Opciones',
-    ('','Alto riesgo por cama UCI en cada área', 'Alto riesgo por hospital en cada área', 'Camas UCI por área', 'Hospitales en cada área', 'Riesgo Total en cada área')
+    ('','Alto riesgo por cama UCI en cada hospital', 'Alto riesgo por hospital en cada área', 'Camas UCI por área', 'Hospitales en cada área', 'Riesgo Total en cada área','Hospitales existentes')
     )
 min_ = database_data[database_data['total_percent_at_risk']>= ((str(_min) + "%") + ("%"))]
 max_ = min_[database_data['total_percent_at_risk'] <= ((str(_max) + "%") + ("%"))]
@@ -108,6 +116,21 @@ if(len(max_) == 0):
 else:
     st.write(max_)
         
+xs = database_data.icu_beds
+xt = database_data.high_risk_per_ICU_bed
+for i in xs:
+    if (pd.isna(i)):
+        i=0
+        arr_hosp.append(int(i))
+    else:
+        arr_hosp.append(int(i))
+        
+for i in xt:
+    if (pd.isna(i)):
+        i=0
+        arr_arcu.append(int(i))
+    else:
+        arr_arcu.append(int(i))
 
 if(len(selected_decks) > 0):
     for i in selected_decks:
@@ -118,35 +141,59 @@ if(len(selected_decks) > 0):
 if option == '':
     st.write()
 
-if option == 'Alto riesgo por cama UCI en cada área':
+
+x = arr_hosp
+y = arr_arcu
+
+p = figure(
+    title='Riesgo por cama según hospital',
+    x_axis_label='x',
+    y_axis_label='y')
+if option == 'Alto riesgo por cama UCI en cada hospital':
     df = database_data[["MMSA", 'high_risk_per_ICU_bed']]
     chart_df = df.groupby(['MMSA']).sum()
     st.header(option)
-    st.line_chart(chart_df, x=["MMSA"], y='high_risk_per_ICU_bed')
+    p.line(x, y, legend_label='Trend', line_width=2)
+    st.bokeh_chart(p, use_container_width=True)
 
 if option == 'Alto riesgo por hospital en cada área':
-    df = database_data[["MMSA", 'high_risk_per_hospital']]
-    chart_df = df.groupby(['MMSA']).sum()
-    st.header(option)
-    st.line_chart(chart_df, x=["MMSA"], y='high_risk_per_hospital')
+    chart = alt.Chart(database_data).mark_circle().encode(
+        x='MMSA',
+        y='high_risk_per_hospital',
+        color='hospitals',
+    ).interactive()
+
+    tab1, tab2 = st.tabs(["Bonito", "Nativo"])
+
+    with tab1:
+        st.altair_chart(chart, theme="streamlit", use_container_width=True)
+    with tab2:
+        st.altair_chart(chart, theme=None, use_container_width=True)
 
 if option == 'Camas UCI por área':
     df = database_data[["MMSA", 'icu_beds']]
     chart_df = df.groupby(['MMSA']).sum()
     st.header(option)
-    st.line_chart(chart_df, x=["MMSA"], y='icu_beds')
-
+    st.area_chart(chart_df, x=["MMSA"], y='icu_beds')
+    
 if option == 'Hospitales en cada área':
     df = database_data[["MMSA", 'hospitals']]
     chart_df = df.groupby(['MMSA']).sum()
     st.header(option)
     st.line_chart(chart_df, x=["MMSA"], y='hospitals')
     
+if option == 'Hospitales existentes':
+    st.header(option)
+    fig, ax = plt.subplots()
+    ax.hist(arr_hosp, bins=20)
+    st.pyplot(fig)
+
 if option == 'Riesgo Total en cada área':
     df = database_data[["MMSA", 'total_at_risk']]
     chart_df = df.groupby(['MMSA']).sum()
     st.header(option)
     st.bar_chart(chart_df, x=["MMSA"], y='total_at_risk')
+    
 
 
 

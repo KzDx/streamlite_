@@ -1,2 +1,6 @@
 pandas
 streamlit
+seaborn
+matplotlib
+plotly
+bokeh==2.4.3
